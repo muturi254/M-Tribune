@@ -3,8 +3,8 @@ from django.http import HttpResponse, Http404
 import datetime as dt
 
 # Create your views here.
-def welcome(request):
-    return render(request, "welcome.html")
+# def welcome(request):
+#     return render(request, "welcome.html")
 # refactor 1
 # def convert_dates(dates):
 #     day_number = dt.date.weekday(dates)
