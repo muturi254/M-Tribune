@@ -10,7 +10,7 @@ class Editor(models.Model):
         return self.first_name
         
     class Meta:
-        oderering = ['firstname']
+        ordering = ['first_name']
 
 
 class Tags(models.Model):
