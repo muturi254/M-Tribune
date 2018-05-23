@@ -1,5 +1,6 @@
 from django.db import models
 import datetime as dt
+from tinymce.models import HTMLField
 
 # Create your models here.
 class Editor(models.Model):
@@ -26,7 +27,7 @@ class Tags(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=60)
-    post = models.TextField()
+    post = HTMLField()
     editor = models.ForeignKey(Editor)
     tags = models.ManyToManyField(Tags)
     pub_date = models.DateTimeField(auto_now_add=True)
@@ -49,3 +50,7 @@ class Article(models.Model):
     def search_by_title(cls, search_term):
         news = cls.objects.filter(title__icontains=search_term)
         return news
+
+class NewsLetterRecipient(models.Model):
+    name = models.CharField(max_length=3)
+    email = models.EmailField()

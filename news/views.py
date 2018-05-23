@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 import datetime as dt
-from .models import Article
-from .forms import NewsLetterForm
-
+from .models import Article, NewsLetterRecipient
+from .forms import NewsLetterForm, NewArticleForm
+from .email import send_welcome_email
 # Create your views here.
 # def welcome(request):
 #     return render(request, "welcome.html")
@@ -14,6 +15,8 @@ from .forms import NewsLetterForm
 #     day = days[day_number]
 #     return day
 
+
+@login_required(login_url='/accounts/login/')
 def news_of_day(request):
     date = dt.date.today()
     # day = convert_dates(date)
@@ -27,11 +30,17 @@ def news_of_day(request):
     # return HttpResponse(html) 
     news = Article.todays_news()
     if request.method == 'POST':
-        form = NewsLetterForm(requets.POST)
+        form = NewsLetterForm(request.POST)
         if form.is_valid():
-            print("hello peter")
+            # print("hello peter")
+            name = form.cleaned_data['your_name']
+            email = form.cleaned_data['email']
+            recipient = NewsLetterRecipient(name=name, email=email)
+            recipient.save()
+            send_welcome_email(name, email)
+            return HttpResponseRedirect('news_today')
     else:
-        form = NewsLetterForm
+        form = NewsLetterForm()
     return render(request, 'all-news/todays-news.html', {'date':date, 'news': news, 'letterform':form})
 
 
@@ -78,3 +87,16 @@ def article(request, article_id):
         raise Http404
 
     return render(request, "all-news/article.html",  {"article": article})
+
+def new_article(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = NewArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.editor= current_user
+            article.save()
+
+    else:
+        form = NewArticleForm()
+    return render(request, 'new_article.html', {'form':form})
